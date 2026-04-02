@@ -1,8 +1,8 @@
 # KeyCloak-HA
 
-## Why this repository exists
+## Why High Available KeyCloak?
 
-In the current setup, only a single Keycloak instance is running. That means the authentication tier is **not fault tolerant**: if that one Keycloak node becomes unavailable because of a service crash, VM failure, maintenance window, or network problem, authentication requests can no longer be served by another Keycloak node. This repository provides an improved design by deploying **two Keycloak nodes in a cluster** and establishing node discovery through **JGroups/Infinispan with `jdbc-ping`**, so that both nodes can participate in the same Keycloak cluster while sharing a common PostgreSQL database. According to the current Keycloak caching documentation, when Keycloak runs in production mode, distributed caching is enabled and nodes are discovered by default using the **`jdbc-ping` stack**, which uses the configured database to track cluster members. This makes `jdbc-ping` a suitable mechanism for building a multi-node Keycloak deployment on separate virtual machines.
+In our current setup, only a single Keycloak instance is running. That means the authentication tier is **not fault tolerant**: if that one Keycloak node becomes unavailable because of a service crash, VM failure, maintenance window, or network problem, authentication requests can no longer be served by another Keycloak node. This repository provides an improved design by deploying **two Keycloak nodes in a cluster** and establishing node discovery through **JGroups/Infinispan with `jdbc-ping`**, so that both nodes can participate in the same Keycloak cluster while sharing a common PostgreSQL database. According to the current Keycloak caching documentation, when Keycloak runs in production mode, distributed caching is enabled and nodes are discovered by default using the **`jdbc-ping` stack**, which uses the configured database to track cluster members. This makes `jdbc-ping` a suitable mechanism for building a multi-node Keycloak deployment on separate virtual machines.
 
 > Important: this repository improves **Keycloak-tier availability**, but it is **not full end-to-end fault tolerance** yet, because the documented architecture still contains a **single NGINX load balancer VM** and a **single PostgreSQL VM**. In other words, the Keycloak layer becomes redundant, but NGINX and PostgreSQL remain single points of failure unless they are also made highly available.
 
@@ -85,7 +85,11 @@ Example base installation used by the deployment document:
 
 ```bash
 sudo apt update
-sudo apt install -y ufw curl netcat-openbsd docker.io docker-compose-v2
+```
+```bash
+sudo apt install -y docker.io docker-compose-v2
+```
+```bash
 sudo systemctl enable --now docker
 ```
 
