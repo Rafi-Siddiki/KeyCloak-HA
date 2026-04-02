@@ -77,9 +77,6 @@ Prepare the Ubuntu VMs with:
 - Ubuntu `20.04` or `22.04` LTS
 - Docker Engine
 - Docker Compose v2
-- `ufw`
-- `curl`
-- `netcat-openbsd`
 
 Example base installation used by the deployment document:
 
@@ -101,11 +98,11 @@ Clone the same repository on every VM, but only deploy the directory that belong
 
 ```bash
 git clone <your-repo-url>
+```bash
 cd KeyCloak-HA/postgres
-cp .env.example .env
-nano .env
-docker compose --env-file .env up -d
-```
+```bash
+docker compose up -d
+
 
 ### 2. Keycloak node 1 VM (`10.9.0.72`)
 
