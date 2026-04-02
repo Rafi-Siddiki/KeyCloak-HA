@@ -148,10 +148,3 @@ git commit -m "Initial Keycloak HA deployment repository"
 git remote add origin <your-github-repo-url>
 git push -u origin main
 ```
-
-## Notes
-
-- Do not commit real `.env` files.
-- Do not commit the PostgreSQL `data/` directory.
-- Change all placeholder passwords before production use.
-- If you want to keep NGINX native instead of Dockerized, use only the `default.conf.template` as reference and install NGINX directly on the VM.
