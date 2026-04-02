@@ -90,6 +90,15 @@ sudo apt install -y docker.io docker-compose-v2
 sudo systemctl enable --now docker
 ```
 
+## Edit /etc/hosts of each vm and add
+
+```bash
+10.9.0.74  postgres.local
+10.9.0.71  auth.local
+10.9.0.72  kc-node1.local
+10.9.0.73  kc-node2.local
+```
+
 ## Deployment steps by VM
 
 Clone the same repository on every VM, but only deploy the directory that belongs to that VM.
