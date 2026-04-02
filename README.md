@@ -1,12 +1,31 @@
 # KeyCloak-HA
 
-This repository mirrors the 4-VM high-availability Keycloak layout:
+## Why this repository exists
 
-- NGINX load balancer: `10.9.0.71`
-- Keycloak node 1: `10.9.0.72`
-- Keycloak node 2: `10.9.0.73`
-- PostgreSQL: `10.9.0.74`
-- Flask app image: `rafisiddiki/flask-app:1.0.0`
+In the current setup, only a single Keycloak instance is running. That means the authentication tier is **not fault tolerant**: if that one Keycloak node becomes unavailable because of a service crash, VM failure, maintenance window, or network problem, authentication requests can no longer be served by another Keycloak node. This repository provides an improved design by deploying **two Keycloak nodes in a cluster** and establishing node discovery through **JGroups/Infinispan with `jdbc-ping`**, so that both nodes can participate in the same Keycloak cluster while sharing a common PostgreSQL database. According to the current Keycloak caching documentation, when Keycloak runs in production mode, distributed caching is enabled and nodes are discovered by default using the **`jdbc-ping` stack**, which uses the configured database to track cluster members. This makes `jdbc-ping` a suitable mechanism for building a multi-node Keycloak deployment on separate virtual machines.
+
+> Important: this repository improves **Keycloak-tier availability**, but it is **not full end-to-end fault tolerance** yet, because the documented architecture still contains a **single NGINX load balancer VM** and a **single PostgreSQL VM**. In other words, the Keycloak layer becomes redundant, but NGINX and PostgreSQL remain single points of failure unless they are also made highly available.
+
+## Architecture overview
+
+This repository follows the 4-VM architecture from the deployment document:
+
+- **VM1** — NGINX load balancer: `10.9.0.71`
+- **VM2** — Keycloak node 1: `10.9.0.72`
+- **VM3** — Keycloak node 2: `10.9.0.73`
+- **VM4** — PostgreSQL: `10.9.0.74`
+
+The documented request flow is:
+
+**User → Flask App → NGINX Load Balancer → Keycloak Cluster → PostgreSQL**
+
+and the response returns back up the same path after authentication succeeds.
+
+## Architecture diagram
+
+![Keycloak HA Architecture](diagram.png)
+
+The diagram above reflects the HA model described in the deployment document: the Flask application sends authentication requests to the NGINX reverse proxy and load balancer, NGINX distributes those requests to two Keycloak nodes, the two Keycloak nodes synchronize cluster state through Infinispan/JGroups, and both nodes use the shared PostgreSQL database as their persistent backend.
 
 ## Repository layout
 
@@ -32,11 +51,49 @@ KeyCloak-HA/
 └── README.md
 ```
 
-## How to use it
+## Technology stack
 
-Clone the same repository on every VM, but run only the folder that belongs to that VM.
+- Keycloak `26.1.0`
+- PostgreSQL `16`
+- Docker Engine
+- Docker Compose v2
+- NGINX reverse proxy / load balancer
+- Infinispan + JGroups clustering
+- `jdbc-ping` for Keycloak node discovery
+- Sticky sessions using `AUTH_SESSION_ID`
 
-### 1) PostgreSQL VM (10.9.0.74)
+## How the cluster works
+
+Each Keycloak node runs as an independent container on its own VM, but both nodes point to the same PostgreSQL database and are configured with distributed caching. In this design, `KC_CACHE=ispn` enables Infinispan, `KC_CACHE_STACK=jdbc-ping` allows the nodes to discover each other through the shared database, and `JAVA_OPTS_APPEND` binds JGroups traffic to the real VM IP of each Keycloak node. NGINX sits in front of both nodes and forwards authentication traffic to them using sticky sessions, so that a user session remains consistently associated with the same backend node when possible.
+
+## Important note about NGINX in this repository
+
+The original deployment document uses **native NGINX installed directly on VM1**. This repository packages NGINX with Docker Compose for easier version-controlled deployment, but preserves the same functional role: listening on port `80`, forwarding traffic to `10.9.0.72:8080` and `10.9.0.73:8080`, forwarding the required `X-Forwarded-*` headers, and using sticky-session behavior based on Keycloak's `AUTH_SESSION_ID` cookie. If you prefer to match the document exactly, you can install NGINX natively and use the repository's NGINX configuration as the source template.
+
+## Deployment prerequisites
+
+Prepare the Ubuntu VMs with:
+
+- Ubuntu `20.04` or `22.04` LTS
+- Docker Engine
+- Docker Compose v2
+- `ufw`
+- `curl`
+- `netcat-openbsd`
+
+Example base installation used by the deployment document:
+
+```bash
+sudo apt update
+sudo apt install -y ufw curl netcat-openbsd docker.io docker-compose-v2
+sudo systemctl enable --now docker
+```
+
+## Deployment steps by VM
+
+Clone the same repository on every VM, but only deploy the directory that belongs to that VM.
+
+### 1. PostgreSQL VM (`10.9.0.74`)
 
 ```bash
 git clone <your-repo-url>
@@ -46,7 +103,7 @@ nano .env
 docker compose --env-file .env up -d
 ```
 
-### 2) Keycloak node 1 VM (10.9.0.72)
+### 2. Keycloak node 1 VM (`10.9.0.72`)
 
 ```bash
 git clone <your-repo-url>
@@ -56,7 +113,7 @@ nano .env
 docker compose --env-file .env up -d
 ```
 
-### 3) Keycloak node 2 VM (10.9.0.73)
+### 3. Keycloak node 2 VM (`10.9.0.73`)
 
 ```bash
 git clone <your-repo-url>
@@ -66,7 +123,7 @@ nano .env
 docker compose --env-file .env up -d
 ```
 
-### 4) NGINX VM (10.9.0.71)
+### 4. NGINX VM (`10.9.0.71`)
 
 ```bash
 git clone <your-repo-url>
@@ -76,30 +133,13 @@ nano .env
 docker compose --env-file .env up -d
 ```
 
-### 5) Flask app VM
+### 5. Flask application VM
 
 ```bash
 git clone <your-repo-url>
 cd KeyCloak-HA/flask-app
 cp .env.example .env
 nano .env
-docker compose --env-file .env up -d
-```
-
-## Update flow
-
-When you release a new Flask image, push a new tag to Docker Hub, then update `FLASK_IMAGE` in `flask-app/.env`.
-
-Example:
-
-```env
-FLASK_IMAGE=rafisiddiki/flask-app:1.0.1
-```
-
-Then redeploy:
-
-```bash
-docker compose --env-file .env pull
 docker compose --env-file .env up -d
 ```
 
@@ -128,7 +168,7 @@ docker logs nginx-keycloak-lb --tail 50
 curl -I http://127.0.0.1
 ```
 
-### Flask app
+### Flask application
 
 ```bash
 docker ps
@@ -136,15 +176,13 @@ docker logs flask-app --tail 50
 curl http://127.0.0.1:5000
 ```
 
-## Push this repository to GitHub
+### Cluster membership check
 
-From the root of the repository:
+Run this on both Keycloak VMs:
 
 ```bash
-git init
-git branch -M main
-git add .
-git commit -m "Initial Keycloak HA deployment repository"
-git remote add origin <your-github-repo-url>
-git push -u origin main
+sudo docker logs keycloak | egrep -i "ISPN000094|cluster view|rebalance"
 ```
+
+A successful cluster formation should show a view containing **2 members**.
+
