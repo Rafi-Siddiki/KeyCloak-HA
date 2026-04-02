@@ -4,22 +4,29 @@ services:
     container_name: keycloak
     restart: unless-stopped
     network_mode: host
+    env_file:
+      - .env
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD}
-      KC_DB: postgres
+
+      KC_DB: ${KC_DB}
       KC_DB_URL: ${KC_DB_URL}
       KC_DB_USERNAME: ${KC_DB_USERNAME}
       KC_DB_PASSWORD: ${KC_DB_PASSWORD}
-      KC_PROXY_HEADERS: xforwarded
-      KC_HTTP_ENABLED: "true"
+
+      KC_PROXY_HEADERS: ${KC_PROXY_HEADERS}
+      KC_HTTP_ENABLED: ${KC_HTTP_ENABLED}
       KC_HOSTNAME: ${KC_HOSTNAME}
       KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT}
-      KC_CACHE: ispn
-      KC_CACHE_STACK: jdbc-ping
+
+      KC_CACHE: ${KC_CACHE}
+      KC_CACHE_STACK: ${KC_CACHE_STACK}
       KC_NODE_NAME: ${KC_NODE_NAME}
+
       JAVA_OPTS_APPEND: "-Djgroups.bind_addr=${JGROUPS_BIND_ADDR}"
-      KC_HEALTH_ENABLED: "true"
+
+      KC_HEALTH_ENABLED: ${KC_HEALTH_ENABLED}
     command:
       - start
-      - --http-port=8080
+      - --http-port=${KC_HTTP_PORT}
