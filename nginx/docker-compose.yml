@@ -3,6 +3,8 @@ services:
     image: nginx:${NGINX_VERSION}
     container_name: nginx-keycloak-lb
     restart: unless-stopped
+    env_file:
+      - .env
     ports:
       - "${NGINX_HTTP_PORT}:80"
     volumes:
