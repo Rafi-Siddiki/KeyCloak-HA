@@ -149,9 +149,17 @@ docker compose --env-file .env up -d
 
 ```bash
 git clone <your-repo-url>
+```
+```bash
 cd KeyCloak-HA/flask-app
+```
+```bash
 cp .env.example .env
+```
+```bash
 nano .env
+```
+```bash
 docker compose --env-file .env up -d
 ```
 
@@ -161,6 +169,8 @@ docker compose --env-file .env up -d
 
 ```bash
 docker ps
+```
+```bash
 docker logs postgres-keycloak --tail 50
 ```
 
@@ -168,7 +178,11 @@ docker logs postgres-keycloak --tail 50
 
 ```bash
 docker ps
+```
+```bash
 docker logs keycloak --tail 50
+```
+```bash
 curl -I http://127.0.0.1:8080
 ```
 
@@ -176,7 +190,11 @@ curl -I http://127.0.0.1:8080
 
 ```bash
 docker ps
+```
+```bash
 docker logs nginx-keycloak-lb --tail 50
+```
+```bash
 curl -I http://127.0.0.1
 ```
 
@@ -184,7 +202,11 @@ curl -I http://127.0.0.1
 
 ```bash
 docker ps
+```
+```bash
 docker logs flask-app --tail 50
+```
+```bash
 curl http://127.0.0.1:5000
 ```
 
