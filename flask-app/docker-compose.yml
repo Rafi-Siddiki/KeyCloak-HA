@@ -1,0 +1,9 @@
+services:
+  flask-app:
+    image: ${FLASK_IMAGE}
+    container_name: flask-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${FLASK_HOST_PORT}:5000"

@@ -1,0 +1,35 @@
+map $cookie_AUTH_SESSION_ID $kc_sticky_key {
+    default $cookie_AUTH_SESSION_ID;
+    ""      $remote_addr;
+}
+
+upstream keycloak_upstream {
+    hash $kc_sticky_key consistent;
+    server ${KEYCLOAK_NODE1_IP}:${KEYCLOAK_HTTP_PORT} max_fails=3 fail_timeout=10s;
+    server ${KEYCLOAK_NODE2_IP}:${KEYCLOAK_HTTP_PORT} max_fails=3 fail_timeout=10s;
+    keepalive 32;
+}
+
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://keycloak_upstream;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+
+        proxy_set_header Host              $http_host;
+        proxy_set_header X-Forwarded-Host  $http_host;
+        proxy_set_header X-Forwarded-Port  $server_port;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        add_header X-Upstream $upstream_addr always;
+
+        proxy_connect_timeout 5s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+}
