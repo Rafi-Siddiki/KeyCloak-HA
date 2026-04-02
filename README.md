@@ -97,7 +97,7 @@ Clone the same repository on every VM, but only deploy the directory that belong
 ### 1. PostgreSQL VM (`10.9.0.74`)
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
 ```
 ```bash
 cd KeyCloak-HA/postgres
@@ -110,7 +110,7 @@ docker compose up -d
 ### 2. Keycloak node 1 VM (`10.9.0.72`)
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
 ```
 ```bash
 cd KeyCloak-HA/keycloak-node1
@@ -123,20 +123,25 @@ docker compose up -d
 ### 3. Keycloak node 2 VM (`10.9.0.73`)
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
+```
+```bash
 cd KeyCloak-HA/keycloak-node2
-cp .env.example .env
-nano .env
-docker compose --env-file .env up -d
+```
+
+```bash
+docker compose up -d
 ```
 
 ### 4. NGINX VM (`10.9.0.71`)
 
 ```bash
 git clone <your-repo-url>
+```
+```bash
 cd KeyCloak-HA/nginx
-cp .env.example .env
-nano .env
+```
+```bash
 docker compose --env-file .env up -d
 ```
 
