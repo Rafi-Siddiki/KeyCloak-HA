@@ -136,19 +136,19 @@ docker compose up -d
 ### 4. NGINX VM (`10.9.0.71`)
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
 ```
 ```bash
 cd KeyCloak-HA/nginx
 ```
 ```bash
-docker compose --env-file .env up -d
+docker compose up -d
 ```
 
 ### 5. Flask application VM
 
 ```bash
-git clone <your-repo-url>
+git clone docker run -p 5000:5000 --name my-app-container --env-file .env rafisiddiki/flask-app:1.0.0
 ```
 ```bash
 cd KeyCloak-HA/flask-app
@@ -160,7 +160,7 @@ cp .env.example .env
 nano .env
 ```
 ```bash
-docker compose --env-file .env up -d
+docker compose up -d
 ```
 
 ## Verification
