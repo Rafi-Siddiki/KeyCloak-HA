@@ -33,20 +33,20 @@ The diagram above reflects the HA model described in the deployment document: th
 KeyCloak-HA/
 ├── postgres/
 │   ├── docker-compose.yml
-│   └── .env.example
+│   └── .env
 ├── keycloak-node1/
 │   ├── docker-compose.yml
-│   └── .env.example
+│   └── .env
 ├── keycloak-node2/
 │   ├── docker-compose.yml
-│   └── .env.example
+│   └── .env
 ├── nginx/
 │   ├── docker-compose.yml
-│   ├── .env.example
+│   ├── .env
 │   └── default.conf.template
 ├── flask-app/
 │   ├── docker-compose.yml
-│   └── .env.example
+│   └── .env
 ├── .gitignore
 └── README.md
 ```
