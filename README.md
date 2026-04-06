@@ -614,15 +614,6 @@ sudo systemctl status flask-app
 sudo journalctl -u flask-app -f
 ```
 
-#### 🖼️ Image placeholders
-
-```md
-![Create Flask Service File](images/flask-app/create-service-file.png)
-```
-
-```md
-![Flask Service Status](images/flask-app/flask-service-status.png)
-```
 
 ### ✅ Result
 
@@ -662,14 +653,10 @@ nano .env
 Set your secret in `.env`:
 
 ```bash
-KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
+CLIENT_SECRET=your_copied_secret_here
 ```
 
-#### 🖼️ Image placeholder
 
-```md
-![Docker Compose Env Screenshot](images/flask-app/docker-compose-env.png)
-```
 
 ### Step 3: Start the Flask container
 
