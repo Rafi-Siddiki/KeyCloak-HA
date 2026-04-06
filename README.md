@@ -156,7 +156,7 @@ docker compose up -d
 
 ### 5. Flask application VM
 
-Phase 1: Keycloak Realm & Client Creation
+#### Phase 1: Keycloak Realm & Client Creation
 Before the Flask app can authenticate users, we need to define the security boundary (the Realm) and the specific entry point (the Client).
 
 Create the Realm:
@@ -177,7 +177,7 @@ Set the Client ID to flask-app.
 
 Click Next.
 
-Phase 2: Capability Configuration
+#### Phase 2: Capability Configuration
 To allow the Flask app to act as a secure backend, we need to adjust the authentication flow settings.
 
 Enable Client Authentication:
