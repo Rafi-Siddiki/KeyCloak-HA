@@ -121,7 +121,7 @@ User → Flask App → NGINX Load Balancer → Keycloak Cluster → PostgreSQL
 
 ## 🖼️ Architecture Diagram
 
-![Keycloak HA Architecture](diagram.png)
+![Keycloak HA Architecture](images/diagram.png)
 
 ### How it works
 
@@ -384,11 +384,13 @@ Before running the Flask app, you must create the Keycloak realm and client.
 electronic-shop
 ```
 
-#### 🖼️ Image placeholder
 
-
-![Create Realm Screenshot](flask-app/create-realm.png)
-
+```md
+![Create Realm Screenshot](images/flask-app/create-realm.png)
+```
+```md
+![Create Realm Screenshot](images/flask-app/create-realm2.png)
+```
 
 ---
 
@@ -409,7 +411,9 @@ flask-app
 ```md
 ![Create Client Screenshot](images/flask-app/create-client.png)
 ```
-
+```md
+![Create Client Screenshot](images/flask-app/create-client2.png)
+```
 ---
 
 ### Phase 3: Configure Client Capabilities
