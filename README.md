@@ -159,7 +159,7 @@ docker compose up -d
 #### Phase 1: Keycloak Realm & Client Creation
 Before the Flask app can authenticate users, we need to define the security boundary (the Realm) and the specific entry point (the Client).
 
-Create the Realm:
+*Create the Realm:*
 
 Open your Keycloak Admin Console.
 
