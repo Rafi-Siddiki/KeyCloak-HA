@@ -498,7 +498,7 @@ nano .env
 Set your secret in `.env`:
 
 ```bash
-KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
+CLIENT_SECRET=your_copied_secret_here
 ```
 
 
