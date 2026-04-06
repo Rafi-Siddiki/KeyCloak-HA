@@ -10,10 +10,10 @@ In our current setup, only a single Keycloak instance is running. That means the
 
 This repository follows the 4-VM architecture from the deployment document:
 
-- **VM1** — NGINX load balancer: `10.9.0.71`
-- **VM2** — Keycloak node 1: `10.9.0.72`
-- **VM3** — Keycloak node 2: `10.9.0.73`
-- **VM4** — PostgreSQL: `10.9.0.74`
+- **VM1** — NGINX load balancer: `auth.lb.xyz`
+- **VM2** — Keycloak node 1: `kc-node1.xyz`
+- **VM3** — Keycloak node 2: `kc-node2.xyz`
+- **VM4** — PostgreSQL: `postgres.db.xyz`
 
 The documented request flow is:
 
@@ -93,10 +93,10 @@ sudo systemctl enable --now docker
 ## Edit /etc/hosts of each vm and add
 
 ```bash
-10.9.0.74  postgres.local
-10.9.0.71  auth.local
-10.9.0.72  kc-node1.local
-10.9.0.73  kc-node2.local
+10.9.0.74  postgres.db.xyz
+10.9.0.71  auth.lb.xyz
+10.9.0.72  kc-node1.xyz
+10.9.0.73  kc-node2.xyz
 ```
 
 ## Deployment steps by VM
