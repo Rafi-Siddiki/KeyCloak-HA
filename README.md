@@ -166,7 +166,7 @@ Open your Keycloak Admin Console.
 
 Hover over the realm selector in the top-left corner and click Create Realm.
 
-Set the Realm name to electronic-shop.
+Set the Realm name to `electronic-shop`.
 
 Create the Client:
 
@@ -175,7 +175,7 @@ Navigate to the Clients section in the left sidebar.
 
 *Click Create client.*
 
-Set the Client ID to flask-app.
+Set the Client ID to `flask-app`.
 
 Click Next.
 
@@ -185,12 +185,12 @@ To allow the Flask app to act as a secure backend, we need to adjust the authent
 
 *Enable Client Authentication:*
 
-In the Capability config tab for your flask-app client, toggle Client authentication to On. This ensures the client requires a secret to communicate with Keycloak.
+In the Capability config tab for your flask-app client, toggle `Client authentication` to `On`. This ensures the client requires a secret to communicate with Keycloak.
 
 
 *Configure Access Grants:*
 
-Under the Authentication flow section, ensure that Direct access grants is checked. This allows your application to exchange user credentials directly for tokens (useful for specific development or programmatic scenarios).
+Under the Authentication flow section, ensure that `Direct access` grants is `checked`. This allows your application to exchange user credentials directly for tokens (useful for specific development or programmatic scenarios).
 
 
 *Save Changes:*
@@ -198,16 +198,16 @@ Under the Authentication flow section, ensure that Direct access grants is check
 Click Save at the bottom of the page.
 
 Phase 3: Securing the Connection
-Once the client is configured as "Confidential" (via Client Authentication), Keycloak generates a unique password for your application.
+Once the client is configured as "Confidential" (via `Client Authentication`), Keycloak generates a unique password for your application.
 
 
 *Retrieve the Secret:*
 
 A new Credentials tab will now be visible at the top of the client settings page.
 
-Click into the Credentials tab.
+Click into the `Credentials` tab.
 
-Locate the Client secret field and click the "Copy to clipboard" icon.
+Locate the `Client secret` field and click the "Copy to clipboard" icon.
 
 
 #### Phase 4: Flask Environment Setup
@@ -216,11 +216,14 @@ Finally, we need to bridge the gap between Keycloak and your local code.
 
 *Update the Environment File:*
 
-Open the .env file located in your Flask project’s root directory.
+Open the `.env` file located in your Flask project’s root directory.
 
-Find the variable for the client secret (CLIENT_SECRET) and paste the value you just copied:
-Bash
+Find the variable for the `client secret` (CLIENT_SECRET) and paste the value you just copied:
+
+```bash
 KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
+```
+
 Launch the Application:
 
 With the .env updated, you can now run your Flask server on any machine. The app will now be able to handshake with the Keycloak server using the electronic-shop realm.
