@@ -1,0 +1,99 @@
+/* General Styling */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Login Page Styling */
+.login-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100vh;
+}
+
+.login-card {
+    background: white;
+    padding: 3rem;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.brand-logo {
+    color: #4f46e5;
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.btn-shop {
+    background-color: #4f46e5;
+    border: none;
+    padding: 12px;
+    font-weight: 600;
+}
+.btn-shop:hover {
+    background-color: #3f36c4;
+}
+
+.form-control:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+}
+
+/* Dashboard Styling */
+.promo-banner {
+    background: linear-gradient(to right, #4f46e5, #8e2de2);
+}
+
+.product-card {
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+}
+/* 1. Cool Banner Background */
+.promo-banner {
+    /* High quality shop interior photo */
+    background: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80');
+    background-size: cover;
+    background-position: center;
+    min-height: 350px;
+}
+
+/* 2. Product Card Hover Effect */
+.product-card {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+.product-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+/* 3. Image Container (Forces aspect ratio) */
+.image-container {
+    height: 250px; /* Fixed height for consistency */
+    width: 100%;
+    background-color: #f8f9fa;
+    position: relative;
+}
+
+/* 4. The Image itself */
+.product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* This makes sure the image fills the box without stretching */
+    transition: transform 0.5s ease;
+}
+
+.product-card:hover .product-img {
+    transform: scale(1.05); /* Slight zoom on hover */
+}
+.text-center img {
+    height: 180px;
+    width: 100%;
+    object-fit: contain; /* Keeps the aspect ratio without cropping */
+    padding: 10px;
+}
