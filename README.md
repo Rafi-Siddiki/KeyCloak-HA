@@ -387,7 +387,7 @@ electronic-shop
 #### 🖼️ Image placeholder
 
 
-![Create Realm Screenshot](images/flask-app/create-realm.png)
+![Create Realm Screenshot](flask-app/create-realm.png)
 
 
 ---
