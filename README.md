@@ -264,7 +264,7 @@ sudo systemctl enable --now docker
 
 ## 🧭 `/etc/hosts` Configuration
 
-Edit `/etc/hosts` on **each VM** and add:
+Modify the /etc/hosts file on **every VM** as well as on the **machine** you’ll use to access the Keycloak dashboard, and include the following entry:
 
 ```text
 10.9.0.74  postgres.db.xyz
@@ -449,7 +449,7 @@ Then click **Save**.
 
 ---
 
-## 6️⃣ Flask Application Deployment Options
+## 6️⃣ Flask Application Deployment Options in VM
 
 You can deploy the Flask app in **two different ways**.
 
@@ -482,14 +482,15 @@ flask-app/Code-Base/
 ### Step 1: Go to the code base directory
 
 ```bash
+git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
+```
+
+```bash
 cd KeyCloak-HA/flask-app/Code-Base
 ```
 
 ### Step 2: Create or review the environment file
 
-```bash
-cp .env.example .env
-```
 
 ```bash
 nano .env
@@ -521,7 +522,7 @@ sudo mkdir -p /opt/flask-app
 ### Step 5: Copy the code base files
 
 ```bash
-sudo cp -r KeyCloak-HA/flask-app/Code-Base/* /opt/flask-app/
+sudo cp -r KeyCloak-HA/flask-app/Code-Base/. /opt/flask-app/
 ```
 
 ### Step 6: Go to the deployment directory
