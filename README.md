@@ -385,12 +385,12 @@ electronic-shop
 ```
 
 
-```md
+
 ![Create Realm Screenshot](images/flask-app/create-realm.png)
-```
-```md
+
+
 ![Create Realm Screenshot](images/flask-app/create-realm2.png)
-```
+
 
 ---
 
@@ -408,12 +408,12 @@ flask-app
 
 #### 🖼️ Image placeholder
 
-```md
+
 ![Create Client Screenshot](images/flask-app/create-client.png)
-```
-```md
+
+
 ![Create Client Screenshot](images/flask-app/create-client2.png)
-```
+
 ---
 
 ### Phase 3: Configure Client Capabilities
@@ -429,9 +429,9 @@ Then click **Save**.
 
 #### 🖼️ Image placeholder
 
-```md
+
 ![Client Capability Configuration](images/flask-app/client-capabilities.png)
-```
+
 
 ---
 
@@ -442,9 +442,9 @@ Then click **Save**.
 
 #### 🖼️ Image placeholder
 
-```md
+
 ![Client Secret Screenshot](images/flask-app/client-secret.png)
-```
+
 
 ---
 
