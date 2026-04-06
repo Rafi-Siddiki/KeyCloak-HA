@@ -406,7 +406,7 @@ flask-app
 
 4. Click **Next**
 
-#### 🖼️ Image placeholder
+#### 🖼️ ScreenShots
 
 
 ![Create Client Screenshot](images/flask-app/create-client.png)
@@ -428,7 +428,7 @@ In the client configuration:
 
 Then click **Save**.
 
-#### 🖼️ Image placeholder
+#### 🖼️ ScreenShots
 
 
 ![Client Capability Configuration](images/flask-app/client-capabilities.png)
@@ -441,7 +441,7 @@ Then click **Save**.
 1. Open the **Credentials** tab
 2. Copy the **Client secret**
 
-#### 🖼️ Image placeholder
+#### 🖼️ ScreenShots
 
 
 ![Client Secret Screenshot](images/flask-app/client-secret.png)
@@ -501,11 +501,6 @@ Set your secret in `.env`:
 KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
 ```
 
-#### 🖼️ Image placeholder
-
-```md
-![Flask Env Update Screenshot](images/flask-app/update-env.png)
-```
 
 ### Step 3: Install Python packages
 
