@@ -1,95 +1,108 @@
-# Keycloak HA Deployment
+# 🔐 Keycloak HA Deployment Guide
 
-A structured, multi-VM Keycloak high-availability deployment using Docker Compose, PostgreSQL, and NGINX.
+A structured, multi-VM **Keycloak High Availability** deployment using **Keycloak**, **PostgreSQL**, **NGINX**, and a **Flask application**.
 
----
+This repository supports **two Flask deployment choices** so users can pick what fits their environment best:
 
-## Table of Contents
-
-- [Overview](#overview)
-- [Why High Availability for Keycloak?](#why-high-availability-for-keycloak)
-- [Current Limitation](#current-limitation)
-- [Architecture Overview](#architecture-overview)
-- [Architecture Diagram](#architecture-diagram)
-- [Repository Layout](#repository-layout)
-- [Technology Stack](#technology-stack)
-- [How the Cluster Works](#how-the-cluster-works)
-- [NGINX Note](#nginx-note)
-- [Prerequisites](#prerequisites)
-- [/etc/hosts Configuration](#etchosts-configuration)
-- [Deployment Steps](#deployment-steps)
-  - [1. PostgreSQL VM](#1-postgresql-vm)
-  - [2. Keycloak Node 1 VM](#2-keycloak-node-1-vm)
-  - [3. Keycloak Node 2 VM](#3-keycloak-node-2-vm)
-  - [4. NGINX VM](#4-nginx-vm)
-  - [5. Flask Application Setup](#5-flask-application-setup)
-- [Run Flask App as a Background Service](#run-flask-app-as-a-background-service)
-- [Verification](#verification)
-  - [PostgreSQL](#postgresql-verification)
-  - [Keycloak Nodes](#keycloak-nodes-verification)
-  - [NGINX](#nginx-verification)
-  - [Flask Application](#flask-application-verification)
-  - [Cluster Membership Check](#cluster-membership-check)
-- [Summary](#summary)
+| Option | Description | Best For |
+|---|---|---|
+| 🧩 **Code Base** | Run the Flask app directly from the source code | Users who want more control and prefer running it as a service |
+| 🐳 **Docker Compose** | Run the Flask app using Docker Compose | Users who prefer containerized deployment |
 
 ---
 
-## Overview
+## 📚 Table of Contents
+
+- [📌 Overview](#-overview)
+- [🎯 Why High Availability for Keycloak?](#-why-high-availability-for-keycloak)
+- [⚠️ Current Limitation](#️-current-limitation)
+- [🏗️ Architecture Overview](#️-architecture-overview)
+- [🖼️ Architecture Diagram](#️-architecture-diagram)
+- [📁 Repository Layout](#-repository-layout)
+- [🛠️ Technology Stack](#️-technology-stack)
+- [🔄 How the Cluster Works](#-how-the-cluster-works)
+- [🌐 NGINX Note](#-nginx-note)
+- [✅ Prerequisites](#-prerequisites)
+- [🧭 /etc/hosts Configuration](#-etchosts-configuration)
+- [🚀 Deployment Steps](#-deployment-steps)
+  - [1️⃣ PostgreSQL VM](#1️⃣-postgresql-vm)
+  - [2️⃣ Keycloak Node 1 VM](#2️⃣-keycloak-node-1-vm)
+  - [3️⃣ Keycloak Node 2 VM](#3️⃣-keycloak-node-2-vm)
+  - [4️⃣ NGINX VM](#4️⃣-nginx-vm)
+  - [5️⃣ Flask Application Setup in Keycloak](#5️⃣-flask-application-setup-in-keycloak)
+  - [6️⃣ Flask Application Deployment Options](#6️⃣-flask-application-deployment-options)
+    - [Option A: 🧩 Code Base Deployment](#option-a--code-base-deployment)
+    - [Option B: 🐳 Docker Compose Deployment](#option-b--docker-compose-deployment)
+- [🧪 Verification](#-verification)
+- [📌 Summary](#-summary)
+
+---
+
+## 📌 Overview
 
 This repository provides a **high-availability Keycloak deployment** by running **two Keycloak nodes in a cluster** behind an **NGINX load balancer**, with **PostgreSQL** as the shared backend database.
 
-The cluster uses:
+### ✨ Core features
 
-- **Infinispan**
-- **JGroups**
-- **`jdbc-ping`** for node discovery
-- **sticky sessions** through NGINX
-
-This setup improves Keycloak service availability compared to a single-node deployment.
+- ✅ 2 Keycloak nodes
+- ✅ Shared PostgreSQL backend
+- ✅ NGINX load balancing
+- ✅ Cluster discovery using `jdbc-ping`
+- ✅ Sticky sessions for better session continuity
+- ✅ Flask app deployment using either:
+  - 🧩 Code Base
+  - 🐳 Docker Compose
 
 ---
 
-## Why High Availability for Keycloak?
+## 🎯 Why High Availability for Keycloak?
 
-In a single-node Keycloak setup, the authentication tier is **not fault tolerant**. If that one Keycloak instance goes down due to:
+In a single-node Keycloak setup, the authentication tier is **not fault tolerant**.
+
+If that one Keycloak instance goes down because of:
 
 - service crash
 - VM failure
 - maintenance
 - network issue
 
-then authentication requests can no longer be served.
+then authentication stops working.
 
-This repository improves that design by deploying:
+This repository improves that design by introducing:
 
-- **2 Keycloak nodes**
-- **shared PostgreSQL database**
-- **cluster discovery via `jdbc-ping`**
-- **load balancing via NGINX**
+| Improvement | Benefit |
+|---|---|
+| 2 Keycloak nodes | Reduces single-node failure risk |
+| Shared PostgreSQL | Central persistence for both nodes |
+| `jdbc-ping` discovery | Allows nodes to find each other through the database |
+| NGINX load balancer | Distributes authentication traffic |
 
-According to the current Keycloak clustering model, when Keycloak runs in production mode, distributed caching is enabled and nodes can use the **`jdbc-ping` stack** to discover each other through the configured database.
-
----
-
-## Current Limitation
-
-> This repository improves **Keycloak-tier availability only**. It is **not yet full end-to-end fault tolerant**.
-
-The following components are still **single points of failure**:
-
-- **NGINX VM**
-- **PostgreSQL VM**
-
-That means:
-
-- Keycloak becomes redundant
-- but NGINX and PostgreSQL still remain non-HA unless they are also redesigned for high availability
+According to Keycloak’s clustering approach, production deployments can use **distributed caching** and **`jdbc-ping`** for node discovery, which makes this a practical multi-node design.
 
 ---
 
-## Architecture Overview
+## ⚠️ Current Limitation
 
-This deployment uses a **4-VM architecture**:
+> This repository improves **Keycloak-tier availability only**. It is **not yet fully end-to-end fault tolerant**.
+
+### 🚧 Current single points of failure
+
+| Component | Current State |
+|---|---|
+| NGINX VM | Single instance |
+| PostgreSQL VM | Single instance |
+
+### What this means
+
+- ✅ Keycloak layer is redundant
+- ❌ NGINX is still a single point of failure
+- ❌ PostgreSQL is still a single point of failure
+
+---
+
+## 🏗️ Architecture Overview
+
+This deployment uses a **4-VM architecture**.
 
 | VM | Role | Hostname |
 |---|---|---|
@@ -98,75 +111,97 @@ This deployment uses a **4-VM architecture**:
 | VM3 | Keycloak Node 2 | `kc-node2.xyz` |
 | VM4 | PostgreSQL | `postgres.db.xyz` |
 
-### Request Flow
+### 🔁 Request Flow
 
 ```text
 User → Flask App → NGINX Load Balancer → Keycloak Cluster → PostgreSQL
 ```
 
-The response returns back through the same path after successful authentication.
-
 ---
 
-## Architecture Diagram
+## 🖼️ Architecture Diagram
 
 ![Keycloak HA Architecture](diagram.png)
 
-The architecture works as follows:
+### How it works
 
-- The **Flask application** sends authentication requests to the **NGINX reverse proxy**
-- **NGINX** forwards requests to one of the two **Keycloak nodes**
-- The two **Keycloak nodes** synchronize cluster state through **Infinispan/JGroups**
-- Both Keycloak nodes use the same **PostgreSQL database** for persistence
+- Flask sends authentication requests to NGINX
+- NGINX forwards requests to one of the two Keycloak nodes
+- Keycloak nodes synchronize through Infinispan/JGroups
+- Both Keycloak nodes use the same PostgreSQL database
 
 ---
 
-## Repository Layout
+## 📁 Repository Layout
+
+Below is the current repository structure:
 
 ```text
 KeyCloak-HA/
-├── postgres/
-│   ├── docker-compose.yml
-│   └── .env
-├── keycloak-node1/
-│   ├── docker-compose.yml
-│   └── .env
-├── keycloak-node2/
-│   ├── docker-compose.yml
-│   └── .env
-├── nginx/
-│   ├── docker-compose.yml
-│   ├── .env
-│   └── default.conf.template
 ├── flask-app/
-│   ├── docker-compose.yml
+│   ├── Code-Base/
+│   │   ├── static/
+│   │   ├── templates/
+│   │   ├── venv/
+│   │   ├── .dockerignore
+│   │   ├── .env
+│   │   ├── .env.example
+│   │   ├── app.py
+│   │   ├── Dockerfile
+│   │   └── requirements.txt
+│   └── Docker-Compose/
+│       ├── .env
+│       └── docker-compose.yml
+├── keycloak-node1/
 │   ├── .env
-│   ├── app.py
-│   ├── requirements.txt
-│   └── flask-app.service
+│   └── docker-compose.yml
+├── keycloak-node2/
+│   ├── .env
+│   └── docker-compose.yml
+├── nginx/
+│   ├── .env
+│   ├── default.conf.template
+│   └── docker-compose.yml
+├── postgres/
+│   ├── .env
+│   └── docker-compose.yml
 ├── .gitignore
-└── README.md
+├── diagram.png
+├── flask-keycloak-setup.md
+├── README.md
+└── README.original.md
 ```
 
----
+### 📌 Notes on Flask structure
 
-## Technology Stack
-
-- Keycloak `26.1.0`
-- PostgreSQL `16`
-- Docker Engine
-- Docker Compose v2
-- NGINX reverse proxy / load balancer
-- Infinispan + JGroups clustering
-- `jdbc-ping` for Keycloak node discovery
-- Sticky sessions using `AUTH_SESSION_ID`
-- `systemd` for running the Flask app as a background service
+| Path | Purpose |
+|---|---|
+| `flask-app/Code-Base/` | Source-code-based Flask deployment |
+| `flask-app/Docker-Compose/` | Docker Compose deployment for Flask |
+| `flask-app/Code-Base/app.py` | Main Flask application |
+| `flask-app/Code-Base/requirements.txt` | Python dependencies |
+| `flask-app/Code-Base/.env.example` | Example environment file |
 
 ---
 
-## How the Cluster Works
+## 🛠️ Technology Stack
 
-Each Keycloak node runs in its own container on its own VM, but both nodes:
+| Component | Version / Purpose |
+|---|---|
+| Keycloak | `26.1.0` |
+| PostgreSQL | `16` |
+| Docker Engine | Container runtime |
+| Docker Compose v2 | Multi-container orchestration |
+| NGINX | Reverse proxy and load balancer |
+| Infinispan + JGroups | Cluster communication |
+| `jdbc-ping` | Keycloak node discovery |
+| `systemd` | Run Flask code base in background as a service |
+
+---
+
+## 🔄 How the Cluster Works
+
+Each Keycloak node runs independently on its own VM, but both nodes:
 
 - connect to the same PostgreSQL database
 - use distributed caching
@@ -174,38 +209,40 @@ Each Keycloak node runs in its own container on its own VM, but both nodes:
 
 ### Important environment behavior
 
-- `KC_CACHE=ispn` enables **Infinispan**
-- `KC_CACHE_STACK=jdbc-ping` allows nodes to discover each other using the **shared database**
-- `JAVA_OPTS_APPEND` binds JGroups traffic to the **real VM IP** of each Keycloak node
+| Variable | Purpose |
+|---|---|
+| `KC_CACHE=ispn` | Enables Infinispan |
+| `KC_CACHE_STACK=jdbc-ping` | Enables DB-based node discovery |
+| `JAVA_OPTS_APPEND` | Binds JGroups traffic to the real VM IP |
 
 ### Load balancing behavior
 
-NGINX sits in front of both Keycloak nodes and forwards authentication traffic to them using **sticky sessions**, so a user remains associated with the same backend node when possible.
+NGINX sits in front of both Keycloak nodes and forwards authentication traffic using **sticky sessions**, helping keep a user bound to the same backend node when possible.
 
 ---
 
-## NGINX Note
+## 🌐 NGINX Note
 
-The original deployment design uses **native NGINX installed directly on VM1**.
+The original design uses **native NGINX** on the VM.
 
-This repository instead packages NGINX with **Docker Compose** for easier deployment and version control, while keeping the same functional behavior:
+This repository uses **Docker Compose** for NGINX instead, while keeping the same behavior.
+
+### NGINX responsibilities
 
 - listens on port `80`
 - forwards traffic to:
   - `10.9.0.72:8080`
   - `10.9.0.73:8080`
-- passes required `X-Forwarded-*` headers
-- uses sticky-session behavior based on Keycloak’s `AUTH_SESSION_ID` cookie
-
-If you want to match the original design exactly, you can install NGINX natively and reuse the provided configuration as a template.
+- passes `X-Forwarded-*` headers
+- supports sticky sessions based on `AUTH_SESSION_ID`
 
 ---
 
-## Prerequisites
+## ✅ Prerequisites
 
 Prepare the Ubuntu VMs with:
 
-- Ubuntu `20.04` or `22.04` LTS
+- Ubuntu `20.04` or `22.04`
 - Docker Engine
 - Docker Compose v2
 
@@ -225,9 +262,9 @@ sudo systemctl enable --now docker
 
 ---
 
-## `/etc/hosts` Configuration
+## 🧭 `/etc/hosts` Configuration
 
-Edit the `/etc/hosts` file on **each VM** and add:
+Edit `/etc/hosts` on **each VM** and add:
 
 ```text
 10.9.0.74  postgres.db.xyz
@@ -236,20 +273,21 @@ Edit the `/etc/hosts` file on **each VM** and add:
 10.9.0.73  kc-node2.xyz
 ```
 
-This allows each VM to resolve the others using consistent internal hostnames.
+---
+
+## 🚀 Deployment Steps
+
+Clone the same repository on every VM, but run only the relevant directory for that VM.
 
 ---
 
-## Deployment Steps
+## 1️⃣ PostgreSQL VM
 
-Clone the same repository on every VM, but only run the service directory that belongs to that VM.
-
----
-
-## 1. PostgreSQL VM
-
-**VM:** `10.9.0.74`  
-**Hostname:** `postgres.db.xyz`
+| Item | Value |
+|---|---|
+| VM IP | `10.9.0.74` |
+| Hostname | `postgres.db.xyz` |
+| Directory | `postgres/` |
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
@@ -265,10 +303,13 @@ docker compose up -d
 
 ---
 
-## 2. Keycloak Node 1 VM
+## 2️⃣ Keycloak Node 1 VM
 
-**VM:** `10.9.0.72`  
-**Hostname:** `kc-node1.xyz`
+| Item | Value |
+|---|---|
+| VM IP | `10.9.0.72` |
+| Hostname | `kc-node1.xyz` |
+| Directory | `keycloak-node1/` |
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
@@ -284,10 +325,13 @@ docker compose up -d
 
 ---
 
-## 3. Keycloak Node 2 VM
+## 3️⃣ Keycloak Node 2 VM
 
-**VM:** `10.9.0.73`  
-**Hostname:** `kc-node2.xyz`
+| Item | Value |
+|---|---|
+| VM IP | `10.9.0.73` |
+| Hostname | `kc-node2.xyz` |
+| Directory | `keycloak-node2/` |
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
@@ -303,10 +347,13 @@ docker compose up -d
 
 ---
 
-## 4. NGINX VM
+## 4️⃣ NGINX VM
 
-**VM:** `10.9.0.71`  
-**Hostname:** `auth.lb.xyz`
+| Item | Value |
+|---|---|
+| VM IP | `10.9.0.71` |
+| Hostname | `auth.lb.xyz` |
+| Directory | `nginx/` |
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
@@ -322,14 +369,14 @@ docker compose up -d
 
 ---
 
-## 5. Flask Application Setup
+## 5️⃣ Flask Application Setup in Keycloak
 
-The Flask application needs a properly configured Keycloak realm and client before it can authenticate users.
+Before running the Flask app, you must create the Keycloak realm and client.
 
 ### Phase 1: Create Realm
 
 1. Open the **Keycloak Admin Console**
-2. Hover over the realm selector in the top-left corner
+2. Hover over the realm selector
 3. Click **Create Realm**
 4. Set the realm name to:
 
@@ -337,7 +384,7 @@ The Flask application needs a properly configured Keycloak realm and client befo
 electronic-shop
 ```
 
-#### Image placeholder
+#### 🖼️ Image placeholder
 
 ```md
 ![Create Realm Screenshot](images/flask-app/create-realm.png)
@@ -347,7 +394,7 @@ electronic-shop
 
 ### Phase 2: Create Client
 
-1. Go to **Clients**
+1. Open **Clients**
 2. Click **Create client**
 3. Set the **Client ID** to:
 
@@ -357,7 +404,7 @@ flask-app
 
 4. Click **Next**
 
-#### Image placeholder
+#### 🖼️ Image placeholder
 
 ```md
 ![Create Client Screenshot](images/flask-app/create-client.png)
@@ -367,25 +414,16 @@ flask-app
 
 ### Phase 3: Configure Client Capabilities
 
-To allow the Flask app to work as a secure backend client:
+In the client configuration:
 
-#### Enable Client Authentication
+| Setting | Value |
+|---|---|
+| Client authentication | `On` |
+| Direct access grants | Enabled |
 
-In the **Capability config** tab for `flask-app`:
+Then click **Save**.
 
-- turn **Client authentication** = `On`
-
-#### Configure Access Grants
-
-Under **Authentication flow**:
-
-- ensure **Direct access grants** is enabled
-
-#### Save Changes
-
-- click **Save**
-
-#### Image placeholder
+#### 🖼️ Image placeholder
 
 ```md
 ![Client Capability Configuration](images/flask-app/client-capabilities.png)
@@ -395,15 +433,10 @@ Under **Authentication flow**:
 
 ### Phase 4: Retrieve Client Secret
 
-Once client authentication is enabled, Keycloak generates a secret for the client.
-
-#### Steps
-
 1. Open the **Credentials** tab
-2. Locate **Client secret**
-3. Copy the generated secret
+2. Copy the **Client secret**
 
-#### Image placeholder
+#### 🖼️ Image placeholder
 
 ```md
 ![Client Secret Screenshot](images/flask-app/client-secret.png)
@@ -411,37 +444,65 @@ Once client authentication is enabled, Keycloak generates a secret for the clien
 
 ---
 
-### Phase 5: Update Flask Environment File
+## 6️⃣ Flask Application Deployment Options
 
-Open the Flask app `.env` file and set:
+You can deploy the Flask app in **two different ways**.
+
+| Option | Path | Recommended For |
+|---|---|---|
+| 🧩 Code Base | `flask-app/Code-Base/` | Users who want to run the app as a service |
+| 🐳 Docker Compose | `flask-app/Docker-Compose/` | Users who want container-based deployment |
+
+---
+
+## Option A — 🧩 Code Base Deployment
+
+This method runs the Flask app from source code and keeps it running in the background using **systemd**.
+
+### 📂 Location
+
+```text
+flask-app/Code-Base/
+```
+
+### Files used
+
+| File | Purpose |
+|---|---|
+| `.env` | Environment variables |
+| `.env.example` | Example environment file |
+| `app.py` | Main application |
+| `requirements.txt` | Python dependencies |
+
+### Step 1: Go to the code base directory
+
+```bash
+cd KeyCloak-HA/flask-app/Code-Base
+```
+
+### Step 2: Create or review the environment file
+
+```bash
+cp .env.example .env
+```
+
+```bash
+nano .env
+```
+
+Set your secret in `.env`:
 
 ```bash
 KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
 ```
 
-#### Image placeholder
+#### 🖼️ Image placeholder
 
 ```md
 ![Flask Env Update Screenshot](images/flask-app/update-env.png)
 ```
 
----
-
-## Run Flask App as a Background Service
-
-This section replaces the earlier “run manually” approach and uses **systemd** so the Flask app runs in the background and restarts automatically.
-
-### Recommended project structure for Flask VM
-
-```text
-/opt/flask-app/
-├── app.py
-├── requirements.txt
-├── .env
-└── venv/
-```
-
-### 1. Install required packages
+### Step 3: Install Python packages
 
 ```bash
 sudo apt update
@@ -451,61 +512,55 @@ sudo apt update
 sudo apt install -y python3 python3-pip python3-venv
 ```
 
-### 2. Create application directory
+### Step 4: Create a deployment directory
 
 ```bash
 sudo mkdir -p /opt/flask-app
 ```
 
-### 3. Copy application files
+### Step 5: Copy the code base files
 
 ```bash
-sudo cp -r KeyCloak-HA/flask-app/* /opt/flask-app/
+sudo cp -r KeyCloak-HA/flask-app/Code-Base/* /opt/flask-app/
 ```
 
-### 4. Create Python virtual environment
+### Step 6: Go to the deployment directory
 
 ```bash
 cd /opt/flask-app
 ```
 
+### Step 7: Create a virtual environment
+
 ```bash
 python3 -m venv venv
 ```
 
-### 5. Install Python dependencies
+### Step 8: Activate the virtual environment
 
 ```bash
 source venv/bin/activate
 ```
 
+### Step 9: Upgrade pip
+
 ```bash
 pip install --upgrade pip
 ```
+
+### Step 10: Install requirements
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 6. Create or edit the environment file
-
-```bash
-nano /opt/flask-app/.env
-```
-
-Example:
-
-```bash
-KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
-```
-
-### 7. Create the systemd service file
+### Step 11: Create the systemd service file
 
 ```bash
 sudo nano /etc/systemd/system/flask-app.service
 ```
 
-Paste this into the file:
+Paste the following:
 
 ```ini
 [Unit]
@@ -524,37 +579,37 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-### 8. Reload systemd
+### Step 12: Reload systemd
 
 ```bash
 sudo systemctl daemon-reload
 ```
 
-### 9. Enable the service at boot
+### Step 13: Enable the service
 
 ```bash
 sudo systemctl enable flask-app
 ```
 
-### 10. Start the service
+### Step 14: Start the service
 
 ```bash
 sudo systemctl start flask-app
 ```
 
-### 11. Check service status
+### Step 15: Check service status
 
 ```bash
 sudo systemctl status flask-app
 ```
 
-### 12. View service logs
+### Step 16: View logs
 
 ```bash
 sudo journalctl -u flask-app -f
 ```
 
-#### Image placeholders for service setup
+#### 🖼️ Image placeholders
 
 ```md
 ![Create Flask Service File](images/flask-app/create-service-file.png)
@@ -564,15 +619,82 @@ sudo journalctl -u flask-app -f
 ![Flask Service Status](images/flask-app/flask-service-status.png)
 ```
 
----
+### ✅ Result
 
-## Verification
-
-After deployment, verify each component separately.
+The Flask app will now run in the background and automatically restart on failure or reboot.
 
 ---
 
-## PostgreSQL Verification
+## Option B — 🐳 Docker Compose Deployment
+
+This method runs the Flask app using the repository’s Docker Compose configuration.
+
+### 📂 Location
+
+```text
+flask-app/Docker-Compose/
+```
+
+### Files used
+
+| File | Purpose |
+|---|---|
+| `.env` | Environment variables |
+| `docker-compose.yml` | Flask Compose deployment |
+
+### Step 1: Go to the Docker Compose directory
+
+```bash
+cd KeyCloak-HA/flask-app/Docker-Compose
+```
+
+### Step 2: Edit the environment file
+
+```bash
+nano .env
+```
+
+Set your secret in `.env`:
+
+```bash
+KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
+```
+
+#### 🖼️ Image placeholder
+
+```md
+![Docker Compose Env Screenshot](images/flask-app/docker-compose-env.png)
+```
+
+### Step 3: Start the Flask container
+
+```bash
+docker compose up -d
+```
+
+### Step 4: Check running containers
+
+```bash
+docker ps
+```
+
+### Step 5: View logs
+
+```bash
+docker logs flask-app --tail 50
+```
+
+### ✅ Result
+
+The Flask application will run as a Docker container in the background.
+
+---
+
+## 🧪 Verification
+
+After deployment, verify each component.
+
+### PostgreSQL
 
 ```bash
 docker ps
@@ -582,9 +704,7 @@ docker ps
 docker logs postgres-keycloak --tail 50
 ```
 
----
-
-## Keycloak Nodes Verification
+### Keycloak Nodes
 
 ```bash
 docker ps
@@ -598,9 +718,7 @@ docker logs keycloak --tail 50
 curl -I http://127.0.0.1:8080
 ```
 
----
-
-## NGINX Verification
+### NGINX
 
 ```bash
 docker ps
@@ -614,9 +732,7 @@ docker logs nginx-keycloak-lb --tail 50
 curl -I http://127.0.0.1
 ```
 
----
-
-## Flask Application Verification
+### Flask App — Code Base Option
 
 ```bash
 sudo systemctl status flask-app
@@ -630,33 +746,50 @@ sudo journalctl -u flask-app -n 50
 curl http://127.0.0.1:5000
 ```
 
----
+### Flask App — Docker Compose Option
 
-## Cluster Membership Check
+```bash
+docker ps
+```
 
-Run this on **both Keycloak VMs**:
+```bash
+docker logs flask-app --tail 50
+```
+
+```bash
+curl http://127.0.0.1:5000
+```
+
+### Cluster Membership Check
+
+Run on both Keycloak VMs:
 
 ```bash
 sudo docker logs keycloak | egrep -i "ISPN000094|cluster view|rebalance"
 ```
 
-A healthy cluster should show a view containing **2 members**.
+A healthy cluster should show **2 members**.
 
 ---
 
-## Summary
+## 📌 Summary
 
-This repository provides:
+### This repository provides
 
-- a **2-node Keycloak HA design**
-- **shared PostgreSQL persistence**
-- **NGINX load balancing**
-- **cluster discovery with `jdbc-ping`**
-- **sticky sessions for client continuity**
-- **background Flask execution using `systemd`**
+- ✅ 2-node Keycloak HA design
+- ✅ Shared PostgreSQL persistence
+- ✅ NGINX load balancing
+- ✅ `jdbc-ping` cluster discovery
+- ✅ Sticky sessions
+- ✅ Flask deployment in two modes:
+  - 🧩 Code Base
+  - 🐳 Docker Compose
 
-It is a strong improvement over a single-node Keycloak deployment, while still leaving room for future HA improvements in:
+### Future improvement areas
 
-- PostgreSQL
-- NGINX
-- full end-to-end redundancy
+| Area | Suggested Improvement |
+|---|---|
+| PostgreSQL | Add HA or replication |
+| NGINX | Add redundant LB |
+| Flask service | Run with dedicated non-root user |
+| End-to-end HA | Remove remaining single points of failure |
