@@ -224,10 +224,21 @@ Find the variable for the `client secret` (CLIENT_SECRET) and paste the value yo
 KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
 ```
 
-Launch the Application:
+Runnig the Application:
 
-With the .env updated, you can now run your Flask server on any machine. The app will now be able to handshake with the Keycloak server using the electronic-shop realm.
+With the .env updated, you can now run your Flask server on any machine. The app will now be able to handshake with the Keycloak server using the electronic-shop realm. We can use either the `code base` or the `docker compose` file.
 
+
+#### Code Base
+```bash
+navigate to /KeyCloak-HA/flask-app/Code Base
+```
+```bash
+app.py
+```
+
+
+#### Docker Compose
 ```bash
 git clone docker run -p 5000:5000 --name my-app-container --env-file .env rafisiddiki/flask-app:1.0.0
 ```
