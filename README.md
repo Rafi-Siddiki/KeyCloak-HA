@@ -414,6 +414,7 @@ flask-app
 
 ![Create Client Screenshot](images/flask-app/create-client2.png)
 
+![Create Client Screenshot](images/flask-app/create-client3.png)
 ---
 
 ### Phase 3: Configure Client Capabilities
