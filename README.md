@@ -103,7 +103,7 @@ sudo systemctl enable --now docker
 
 Clone the same repository on every VM, but only deploy the directory that belongs to that VM.
 
-### 1. PostgreSQL VM (`10.9.0.74`)
+### 1. PostgreSQL VM (`10.9.0.74` - `postgres.db.xyz`)
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
@@ -116,7 +116,7 @@ docker compose up -d
 ```
 
 
-### 2. Keycloak node 1 VM (`10.9.0.72`)
+### 2. Keycloak node 1 VM (`10.9.0.72` - `kc-node1.xyz`)
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
@@ -129,7 +129,7 @@ cd KeyCloak-HA/keycloak-node1
 docker compose up -d
 ```
 
-### 3. Keycloak node 2 VM (`10.9.0.73`)
+### 3. Keycloak node 2 VM (`10.9.0.73` - `kc-node2.xyz`)
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
@@ -142,7 +142,7 @@ cd KeyCloak-HA/keycloak-node2
 docker compose up -d
 ```
 
-### 4. NGINX VM (`10.9.0.71`)
+### 4. NGINX VM (`10.9.0.71` - `auth.lb.xyz`)
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
