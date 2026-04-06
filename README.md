@@ -23,12 +23,14 @@ A structured, multi-VM Keycloak high-availability deployment using Docker Compos
   - [3. Keycloak Node 2 VM](#3-keycloak-node-2-vm)
   - [4. NGINX VM](#4-nginx-vm)
   - [5. Flask Application Setup](#5-flask-application-setup)
+- [Run Flask App as a Background Service](#run-flask-app-as-a-background-service)
 - [Verification](#verification)
   - [PostgreSQL](#postgresql-verification)
   - [Keycloak Nodes](#keycloak-nodes-verification)
   - [NGINX](#nginx-verification)
   - [Flask Application](#flask-application-verification)
   - [Cluster Membership Check](#cluster-membership-check)
+- [Summary](#summary)
 
 ---
 
@@ -138,7 +140,10 @@ KeyCloak-HA/
 │   └── default.conf.template
 ├── flask-app/
 │   ├── docker-compose.yml
-│   └── .env
+│   ├── .env
+│   ├── app.py
+│   ├── requirements.txt
+│   └── flask-app.service
 ├── .gitignore
 └── README.md
 ```
@@ -155,6 +160,7 @@ KeyCloak-HA/
 - Infinispan + JGroups clustering
 - `jdbc-ping` for Keycloak node discovery
 - Sticky sessions using `AUTH_SESSION_ID`
+- `systemd` for running the Flask app as a background service
 
 ---
 
@@ -207,7 +213,13 @@ Prepare the Ubuntu VMs with:
 
 ```bash
 sudo apt update
+```
+
+```bash
 sudo apt install -y docker.io docker-compose-v2
+```
+
+```bash
 sudo systemctl enable --now docker
 ```
 
@@ -217,7 +229,7 @@ sudo systemctl enable --now docker
 
 Edit the `/etc/hosts` file on **each VM** and add:
 
-```bash
+```text
 10.9.0.74  postgres.db.xyz
 10.9.0.71  auth.lb.xyz
 10.9.0.72  kc-node1.xyz
@@ -241,7 +253,13 @@ Clone the same repository on every VM, but only run the service directory that b
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
+```
+
+```bash
 cd KeyCloak-HA/postgres
+```
+
+```bash
 docker compose up -d
 ```
 
@@ -254,7 +272,13 @@ docker compose up -d
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
+```
+
+```bash
 cd KeyCloak-HA/keycloak-node1
+```
+
+```bash
 docker compose up -d
 ```
 
@@ -267,7 +291,13 @@ docker compose up -d
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
+```
+
+```bash
 cd KeyCloak-HA/keycloak-node2
+```
+
+```bash
 docker compose up -d
 ```
 
@@ -280,7 +310,13 @@ docker compose up -d
 
 ```bash
 git clone https://github.com/Rafi-Siddiki/KeyCloak-HA.git
+```
+
+```bash
 cd KeyCloak-HA/nginx
+```
+
+```bash
 docker compose up -d
 ```
 
@@ -290,9 +326,7 @@ docker compose up -d
 
 The Flask application needs a properly configured Keycloak realm and client before it can authenticate users.
 
-### Phase 1: Create Realm and Client
-
-#### Create the Realm
+### Phase 1: Create Realm
 
 1. Open the **Keycloak Admin Console**
 2. Hover over the realm selector in the top-left corner
@@ -303,7 +337,15 @@ The Flask application needs a properly configured Keycloak realm and client befo
 electronic-shop
 ```
 
-#### Create the Client
+#### Image placeholder
+
+```md
+![Create Realm Screenshot](images/flask-app/create-realm.png)
+```
+
+---
+
+### Phase 2: Create Client
 
 1. Go to **Clients**
 2. Click **Create client**
@@ -315,9 +357,15 @@ flask-app
 
 4. Click **Next**
 
+#### Image placeholder
+
+```md
+![Create Client Screenshot](images/flask-app/create-client.png)
+```
+
 ---
 
-### Phase 2: Configure Client Capabilities
+### Phase 3: Configure Client Capabilities
 
 To allow the Flask app to work as a secure backend client:
 
@@ -337,9 +385,15 @@ Under **Authentication flow**:
 
 - click **Save**
 
+#### Image placeholder
+
+```md
+![Client Capability Configuration](images/flask-app/client-capabilities.png)
+```
+
 ---
 
-### Phase 3: Retrieve Client Secret
+### Phase 4: Retrieve Client Secret
 
 Once client authentication is enabled, Keycloak generates a secret for the client.
 
@@ -349,9 +403,15 @@ Once client authentication is enabled, Keycloak generates a secret for the clien
 2. Locate **Client secret**
 3. Copy the generated secret
 
+#### Image placeholder
+
+```md
+![Client Secret Screenshot](images/flask-app/client-secret.png)
+```
+
 ---
 
-### Phase 4: Update Flask Environment File
+### Phase 5: Update Flask Environment File
 
 Open the Flask app `.env` file and set:
 
@@ -359,46 +419,149 @@ Open the Flask app `.env` file and set:
 KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
 ```
 
----
+#### Image placeholder
 
-### Run the Flask Application
-
-You can run the Flask application either from:
-
-- the code base
-- Docker Compose
-
----
-
-### Option A: Code Base
-
-```bash
-navigate to /KeyCloak-HA/flask-app/Code Base
-```
-
-Main application entry:
-
-```bash
-app.py
+```md
+![Flask Env Update Screenshot](images/flask-app/update-env.png)
 ```
 
 ---
 
-### Option B: Docker
+## Run Flask App as a Background Service
 
-If you are using Docker directly:
+This section replaces the earlier “run manually” approach and uses **systemd** so the Flask app runs in the background and restarts automatically.
 
-```bash
-docker run -p 5000:5000 --name my-app-container --env-file .env rafisiddiki/flask-app:1.0.0
+### Recommended project structure for Flask VM
+
+```text
+/opt/flask-app/
+├── app.py
+├── requirements.txt
+├── .env
+└── venv/
 ```
 
-Or if you are using the repository deployment:
+### 1. Install required packages
 
 ```bash
-cd KeyCloak-HA/flask-app
-cp .env.example .env
-nano .env
-docker compose up -d
+sudo apt update
+```
+
+```bash
+sudo apt install -y python3 python3-pip python3-venv
+```
+
+### 2. Create application directory
+
+```bash
+sudo mkdir -p /opt/flask-app
+```
+
+### 3. Copy application files
+
+```bash
+sudo cp -r KeyCloak-HA/flask-app/* /opt/flask-app/
+```
+
+### 4. Create Python virtual environment
+
+```bash
+cd /opt/flask-app
+```
+
+```bash
+python3 -m venv venv
+```
+
+### 5. Install Python dependencies
+
+```bash
+source venv/bin/activate
+```
+
+```bash
+pip install --upgrade pip
+```
+
+```bash
+pip install -r requirements.txt
+```
+
+### 6. Create or edit the environment file
+
+```bash
+nano /opt/flask-app/.env
+```
+
+Example:
+
+```bash
+KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
+```
+
+### 7. Create the systemd service file
+
+```bash
+sudo nano /etc/systemd/system/flask-app.service
+```
+
+Paste this into the file:
+
+```ini
+[Unit]
+Description=Flask Application Service
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/flask-app
+EnvironmentFile=/opt/flask-app/.env
+ExecStart=/opt/flask-app/venv/bin/python /opt/flask-app/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+### 8. Reload systemd
+
+```bash
+sudo systemctl daemon-reload
+```
+
+### 9. Enable the service at boot
+
+```bash
+sudo systemctl enable flask-app
+```
+
+### 10. Start the service
+
+```bash
+sudo systemctl start flask-app
+```
+
+### 11. Check service status
+
+```bash
+sudo systemctl status flask-app
+```
+
+### 12. View service logs
+
+```bash
+sudo journalctl -u flask-app -f
+```
+
+#### Image placeholders for service setup
+
+```md
+![Create Flask Service File](images/flask-app/create-service-file.png)
+```
+
+```md
+![Flask Service Status](images/flask-app/flask-service-status.png)
 ```
 
 ---
@@ -413,6 +576,9 @@ After deployment, verify each component separately.
 
 ```bash
 docker ps
+```
+
+```bash
 docker logs postgres-keycloak --tail 50
 ```
 
@@ -422,7 +588,13 @@ docker logs postgres-keycloak --tail 50
 
 ```bash
 docker ps
+```
+
+```bash
 docker logs keycloak --tail 50
+```
+
+```bash
 curl -I http://127.0.0.1:8080
 ```
 
@@ -432,7 +604,13 @@ curl -I http://127.0.0.1:8080
 
 ```bash
 docker ps
+```
+
+```bash
 docker logs nginx-keycloak-lb --tail 50
+```
+
+```bash
 curl -I http://127.0.0.1
 ```
 
@@ -441,8 +619,14 @@ curl -I http://127.0.0.1
 ## Flask Application Verification
 
 ```bash
-docker ps
-docker logs flask-app --tail 50
+sudo systemctl status flask-app
+```
+
+```bash
+sudo journalctl -u flask-app -n 50
+```
+
+```bash
 curl http://127.0.0.1:5000
 ```
 
@@ -469,6 +653,7 @@ This repository provides:
 - **NGINX load balancing**
 - **cluster discovery with `jdbc-ping`**
 - **sticky sessions for client continuity**
+- **background Flask execution using `systemd`**
 
 It is a strong improvement over a single-node Keycloak deployment, while still leaving room for future HA improvements in:
 
