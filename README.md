@@ -156,6 +156,68 @@ docker compose up -d
 
 ### 5. Flask application VM
 
+Phase 1: Keycloak Realm & Client Creation
+Before the Flask app can authenticate users, we need to define the security boundary (the Realm) and the specific entry point (the Client).
+
+Create the Realm:
+
+Open your Keycloak Admin Console.
+
+Hover over the realm selector in the top-left corner and click Create Realm.
+
+Set the Realm name to electronic-shop.
+
+Create the Client:
+
+Navigate to the Clients section in the left sidebar.
+
+Click Create client.
+
+Set the Client ID to flask-app.
+
+Click Next.
+
+Phase 2: Capability Configuration
+To allow the Flask app to act as a secure backend, we need to adjust the authentication flow settings.
+
+Enable Client Authentication:
+
+In the Capability config tab for your flask-app client, toggle Client authentication to On. This ensures the client requires a secret to communicate with Keycloak.
+
+Configure Access Grants:
+
+Under the Authentication flow section, ensure that Direct access grants is checked. This allows your application to exchange user credentials directly for tokens (useful for specific development or programmatic scenarios).
+
+Save Changes:
+
+Click Save at the bottom of the page.
+
+Phase 3: Securing the Connection
+Once the client is configured as "Confidential" (via Client Authentication), Keycloak generates a unique password for your application.
+
+Retrieve the Secret:
+
+A new Credentials tab will now be visible at the top of the client settings page.
+
+Click into the Credentials tab.
+
+Locate the Client secret field and click the "Copy to clipboard" icon.
+
+Phase 4: Flask Environment Setup
+Finally, we need to bridge the gap between Keycloak and your local code.
+
+Update the Environment File:
+
+Open the .env file located in your Flask project’s root directory.
+
+Find the variable for the client secret (e.g., KEYCLOAK_CLIENT_SECRET) and paste the value you just copied:
+
+Bash
+KEYCLOAK_CLIENT_SECRET=your_copied_secret_here
+Launch the Application:
+
+With the .env updated, you can now run your Flask server on any machine. The app will now be able to handshake with the Keycloak server using the electronic-shop realm.
+
 ```bash
 git clone docker run -p 5000:5000 --name my-app-container --env-file .env rafisiddiki/flask-app:1.0.0
 ```
