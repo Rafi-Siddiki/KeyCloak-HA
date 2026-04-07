@@ -110,6 +110,7 @@ This deployment uses a **4-VM architecture**.
 | VM2 | Keycloak Node 1 | `kc-node1.xyz` |
 | VM3 | Keycloak Node 2 | `kc-node2.xyz` |
 | VM4 | PostgreSQL | `postgres.db.xyz` |
+| VM5 | flask-app | `10.9.0.70:5000` |
 
 ### 🔁 Request Flow
 
@@ -371,7 +372,15 @@ docker compose up -d
 
 ## 5️⃣ Flask Application Setup in Keycloak
 
-Before running the Flask app, you must create the Keycloak realm and client.
+Before running the Flask app, you must create the `Keycloak realm` and `client`.
+Navigate to `http://10.9.0.71` and login with the boothstrap values in **Keycloak node env** file. for this repo:
+
+```bash
+user = kcadmin_demo
+```
+```bash
+password = DemoAdminPass_2026!
+```
 
 ### Phase 1: Create Realm
 
