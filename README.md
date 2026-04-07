@@ -1,8 +1,6 @@
 # 🔐 Keycloak HA Deployment Guide
 
-A structured, multi-VM **Keycloak High Availability** deployment using **Keycloak**, **PostgreSQL**, **NGINX**, and a **Flask application**.
-
-This repository supports **two Flask deployment choices** so users can pick what fits their environment best:
+A structured, multi-VM **Keycloak High Availability** deployment using **Keycloak**, **PostgreSQL**, **NGINX**, and a **Flask application**. This repository supports **two Flask deployment choices** so users can pick what fits their environment best:
 
 | Option | Description | Best For |
 |---|---|---|
