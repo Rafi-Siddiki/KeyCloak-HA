@@ -622,7 +622,7 @@ sudo journalctl -u flask-app -f
 
 ### ✅ Result
 
-The Flask app will now run in the background and automatically restart on failure or reboot.
+The Flask app will now run in the background and automatically restart on failure or reboot. You can now access the app on `http://10.9.0.70:5000`
 
 ---
 
