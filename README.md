@@ -203,7 +203,7 @@ According to Keycloak’s clustering approach, production deployments can use **
 
 ## 🏗️ Architecture Overview
 
-This deployment uses a **4-VM architecture**.
+This deployment uses a **5-VM architecture**.
 
 | VM | Role | Hostname |
 |---|---|---|
